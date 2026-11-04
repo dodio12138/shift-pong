@@ -31,4 +31,6 @@ Debug flags (after `--`): `--autoplay`, `--level=0..4`, `--tie-auto`, `--boss-au
 - `scripts/ball_sim.gd` ball physics and the stroke solver; `technique.gd` strokes; `club_ui.gd` menus;
   `tour.gd` / `people.gd` / `roster.gd` players and clubs; `cup_run.gd` cups; `i18n.gd` translations
 
-Asset credits and licences: `sounds/CREDITS.md`, `fonts/CREDITS.md`.
+## Licence
+The code is MIT-licensed (see `LICENSE`). The sounds and the font keep their own
+licences: see `sounds/CREDITS.md` and `fonts/CREDITS.md`.
