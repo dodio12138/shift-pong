@@ -421,6 +421,7 @@ var trick := {}
 var hexes := {"spoon": {PLAYER: 0, AI: 0}, "narrow": {PLAYER: 0, AI: 0}, "giant": {PLAYER: 0, AI: 0},
 		"gravity": {PLAYER: 0, AI: 0}, "view": {PLAYER: 0, AI: 0}}
 var view_cam := 0                  # 视角转移 on you: the view you're stuck with meanwhile
+var serve_hints := 3               # serves left that still show which keys serve what
 var narrow_strips := {}            # side -> [left, right, left edge line, right edge line]
 var narrow_w := {PLAYER: 0.0, AI: 0.0}   # drawn width of the red strips, easing to the target
 var cam_shake := 0.0

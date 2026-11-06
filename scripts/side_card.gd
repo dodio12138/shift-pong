@@ -32,6 +32,7 @@ var stamina_max := 1.0
 var skills: Array = []       # names of the skills taken in (empty when skills are off)
 var keyed := false           # number the chips (your side: keys 1-4)
 var chips_above := false     # the card sits at the bottom of the screen: chips go over it
+var compact := false         # the other side: name, grip, focus pips and stamina only
 var spent: Array = []        # which of them can't be afforded right now
 
 
@@ -65,8 +66,10 @@ func _draw() -> void:
 		draw_rect(r, C_GOOD if i < cards else C_BAR)
 		if focus_active and i == cards:
 			draw_rect(r, C_WHITE, false, 1.0)
-	# bars
+	# bars (the other side: just how tired)
 	var rows := [["到位", settle, -1.0, false], ["力度", power, target, false], ["体力", stamina, -1.0, true]]
+	if compact:
+		rows = [rows[2]]
 	# the bars start after the widest label (labels run longer in English)
 	var bx := BAR_X
 	for row in rows:
