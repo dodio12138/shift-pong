@@ -28,7 +28,7 @@ var _tracks := {}        # "menu" | "match" -> AudioStreamOggVorbis
 var _track := ""
 var last := {"name": "", "t": 0}   # the last named sound and when (ms), for debug screenshots
 const FX := ["blink", "flip", "gravity", "view", "cast", "shift", "click", "win", "lose"]
-const MUSIC_DB := -11.0
+const MUSIC_DB := -13.0
 
 
 func setup(world_node: Node3D) -> void:

@@ -43,6 +43,7 @@ var table: Dictionary          # source -> translation
 var templates: Array = []      # [RegEx, fragment, output template, kinds]
 var cache := {}
 var done := {}                 # StringName in -> StringName out, as the engine asks
+var one_s := RegEx.create_from_string("\\b1 (point|game|heart|stage|ball|round|match|card|time|slot)s\\b")
 var lang := 0                 # 0 English, 1 Japanese (the index into the name tables)
 
 
@@ -118,6 +119,8 @@ func _get_message(src_message: StringName, _context: StringName) -> StringName:
 		done[src_message] = &""   # nothing to translate: the engine keeps it as it is
 		return &""
 	var out := translate(s)
+	if lang == 0:   # the templates are written for many: "1 points left" -> "1 point left"
+		out = one_s.sub(out, "1 $1", true)
 	if OS.has_environment("I18N_MISS") and (_has_cjk(out) if lang == 0 else out == s):
 		print("[i18n-miss] ", s.c_escape())
 	if done.size() > 4000:

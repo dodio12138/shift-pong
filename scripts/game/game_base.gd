@@ -395,7 +395,7 @@ const GIANT_POWER := 1.15
 const GIANT_ANGLE := 1.35          # placement pushed this much further out towards the sidelines
 const WALL_EXTRA := 0.34           # 铜墙铁壁: the net goes up this much (to about half a metre)
 const BLINK_SHIFT := 0.5           # 乾坤挪移: how far (m) the ball jumps sideways
-const GRAVITY_SHIFT := 1.35        # 重力转移: gravity on the cursed side's balls, times this
+const GRAVITY_SHIFT := 1.12        # 重力转移: gravity on the cursed side's balls, times this
 ## 规则转移: in a skill match, every fourth point the rules shift for both sides
 ## for the next two points, one of these at random.
 const RULE_SHIFT_EVERY := 4
@@ -666,6 +666,16 @@ func hold_power() -> float:
 ## lightly spinning ball forgives a firm hit.
 static func power_slack(need: float) -> float:
 	return 0.3 * maxf(need, 0.35)
+
+
+## A side's loadout as skill slots (id, name, desc, cost), in loadout order.
+func loaded(side: int) -> Array:
+	var out := []
+	for id in loadout[side]:
+		for s in SKILL_SLOTS:
+			if s.id == id:
+				out.append(s)
+	return out
 
 
 ## 技能乒乓球 is switched on and this is a real match (not a drill or the tutorial).
