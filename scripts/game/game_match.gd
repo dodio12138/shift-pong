@@ -142,7 +142,8 @@ func start_point() -> void:
 	serve_x = randf_range(-0.5, 0.5)
 	rally = 0
 	banner_label.text = ""
-	if server == PLAYER and not autoplay:
+	if server == PLAYER and not autoplay and (serve_hints > 0 or not drill.is_empty()):
+		serve_hints -= 1   # the keys for a serve, only the first few times
 		rich(tip_label, [{"key": "Q"}, {"key": "W"}, {"key": "E"}, Icons.spin("top"), "    ", {"key": "A"}, {"key": "S"}, {"key": "D"},
 				Icons.spin("back"), "    ", Icons.hold_release(), "      ", {"key": "空格"}, Icons.spin("none")])
 	else:
@@ -1024,7 +1025,11 @@ func do_hit(side: int, off: Vector2) -> void:
 				"P" if side == PLAYER else "AI", grip[side], stroke_name, timing, notes,
 				(" <" + tactic_name + ">") if tactic_name != "" else "", Sim.net_clearance(bp, v, w), bp.z, bp.y,
 				int(s_in * RAD_TO_RPM), int(top * RAD_TO_RPM), kick_y, Time.get_ticks_usec() - t0])
-	if side == PLAYER:
+	if side == PLAYER and not shot_readout():
+		info_label.clear()
+		if not coaching():
+			tip_label.clear()
+	if side == PLAYER and shot_readout():
 		rich(info_label, [str(pname[PLAYER]) + "  ", [stroke_name + (("  【%s】" % tactic_name) if tactic_name != "" else ""), C_YELLOW], " · " + TIMING_NAMES[timing],
 				[(" · " + notes) if notes != "" else "", C_PALE], ["  重球!" if heavy else "", C_RED], "   →  "] + spin_parts(w, v))
 		# feedback: hold strength against the spin it had to cancel, side spin met the right way
@@ -1223,7 +1228,8 @@ func serve(side: int, kind: String, side_spin: float, power: float, quality := 1
 	if side == AI:
 		describe_incoming("发球")
 	else:
-		rich(info_label, [str(pname[PLAYER]) + "  ", ["发球", C_YELLOW], "   →  "] + spin_parts(w, v))
+		if shot_readout():
+			rich(info_label, [str(pname[PLAYER]) + "  ", ["发球", C_YELLOW], "   →  "] + spin_parts(w, v))
 		tip_label.clear()
 
 

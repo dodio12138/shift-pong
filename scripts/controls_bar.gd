@@ -39,7 +39,8 @@ func _notification(what: int) -> void:
 
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), Color(C_INK, 0.78))
+	# compact, the strip only runs as far as its few keys
+	draw_rect(Rect2(Vector2.ZERO, Vector2(size.x if full else minf(size.x, 430.0), size.y)), Color(C_INK, 0.78))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(SCALE, SCALE))
 	var lmb := Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
 	var rmb := Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
@@ -55,9 +56,18 @@ func _draw() -> void:
 		for k in row:
 			any = any or Input.is_key_pressed(k[1])
 
-	# row 1: what the rows / columns mean, mouse
 	var x := 250.0
 	var y := 6.0
+	if not full:   # the keys speak for themselves (spin drawn on them): serve and skills only
+		x = text(x, y, "发球: 按住选旋转, 松开发出", C_WHITE)
+		x = key(x, y, "空格", KEY_SPACE)
+		y += ROW_H
+		x = 250.0
+		for item in [["Shift", KEY_SHIFT, "技能轮盘"], ["T", KEY_T, "专注卡"], ["Tab", KEY_TAB, "全部按键"]]:
+			x = key(x, y, item[0], item[1])
+			x = text(x, y, item[2], C_DIM) + 4.0
+		return
+	# row 1: what the rows / columns mean, mouse
 	x = text(x, y, "上排 拉/扣", Icons.C_ORANGE)
 	x = text(x, y, "下排 搓", Icons.C_SKY)
 	x = text(x, y, "左列 左侧旋", Icons.C_YELLOW)
@@ -77,11 +87,6 @@ func _draw() -> void:
 	x = text(x, y, "发球: 按住选旋转, 松开发出", C_WHITE)
 	x = key(x, y, "空格", KEY_SPACE)
 	x = icon(x, y, Icons.spin("none")) + 18.0
-	if not full:
-		for item in [["Shift", KEY_SHIFT, "技能轮盘"], ["T", KEY_T, "专注卡"], ["Tab", KEY_TAB, "全部按键"]]:
-			x = key(x, y, item[0], item[1])
-			x = text(x, y, item[2], C_DIM) + 4.0
-		return
 	for item in [["L", KEY_L, "难度"], ["G", KEY_G, "握拍"], ["T", KEY_T, "专注卡"], ["B", KEY_B, "回放"], ["C/V", KEY_C, "视角"], ["Tab", KEY_TAB, "收起"], 
 			["F", KEY_F, "观战"], ["R", KEY_R, "重开"], ["Y", KEY_Y, "暂停"], ["M", KEY_M, "菜单"], ["Shift", KEY_SHIFT, "技能轮盘 / 假动作发球"], ["1-4", KEY_1, "技能"], ["I", KEY_I, "数据"]]:
 		x = key(x, y, item[0], item[1])

@@ -422,14 +422,10 @@ func _process(delta: float) -> void:
 	if in_tie_match:
 		if timeout_req != 0:
 			score_label.text += "  [暂停]"
-	if is_human(PLAYER) and drill.is_empty() and not game_over:
-		score_label.text += "  VAR 挑战 %d" % challenges[PLAYER]
 	if autoplay:
 		score_label.text += "  [教练席]" if in_tie_match else ("" if clean else "  [观战]")
 	if skill_test:
 		score_label.text += "  [技能对轰 · 无限专注卡]"
-	if skill_on() and drill.is_empty():
-		score_label.text += "  技能乒乓球"
 	if focus_until_ms > 0:
 		var left := (focus_until_ms - Time.get_ticks_msec()) / 1000.0
 		if left <= 0.0:

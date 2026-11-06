@@ -583,7 +583,8 @@ func build_hud() -> void:
 			card.offset_left = -282.0
 			card.offset_right = -12.0
 			card.offset_top = 74.0
-			card.offset_bottom = 168.0
+			card.offset_bottom = 136.0
+			card.compact = true
 		side_cards[side] = card
 	# 规则转移: a big SHIFT! with a cyan and a red copy split off it
 	shift_word = Control.new()
@@ -652,6 +653,8 @@ func build_hud() -> void:
 	spin_gauge.offset_top = -184.0
 	spin_gauge.offset_right = -16.0
 	spin_gauge.offset_bottom = -66.0
+	spin_gauge.pivot_offset = Vector2(250.0, 118.0)   # shrinks into the corner
+	spin_gauge.scale = Vector2(0.8, 0.8)
 	power_gauge = PowerGauge.new()
 	root.add_child(power_gauge)
 	power_gauge.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
@@ -700,6 +703,18 @@ func make_rich(parent: Control, top: float) -> RichTextLabel:
 
 ## Fills a rich row. Parts: String (plain), Texture2D (icon at 1.3x),
 ## [text, Color] (coloured text) or {"key": "J"} (keycap).
+## The line naming each stroke and its spin: while learning (tutorial and
+## drills) only; in a match the spin gauge says what you need.
+func shot_readout() -> bool:
+	return not drill.is_empty()
+
+
+## Which keys answer the ball coming at you: on the two gentle assist levels,
+## and always while learning.
+func coaching() -> bool:
+	return not drill.is_empty() or int(settings.get("help", 1)) <= 1
+
+
 func rich(l: RichTextLabel, parts: Array) -> void:
 	l.clear()
 	for p in parts:
@@ -750,8 +765,9 @@ func spin_parts(w: Vector3, v: Vector3) -> Array:
 
 func describe_incoming(what: String) -> void:
 	var sw := bw if read_true else read_w   # what you can read of it
-	rich(info_label, [str(pname[AI]) + "  ", [what, C_YELLOW], "   →  "] + spin_parts(sw, bv) + ([] if read_true else [["  （看不清）", C_PALE]]))
-	if autoplay:
+	if shot_readout():
+		rich(info_label, [str(pname[AI]) + "  ", [what, C_YELLOW], "   →  "] + spin_parts(sw, bv) + ([] if read_true else [["  （看不清）", C_PALE]]))
+	if autoplay or not coaching():
 		tip_label.clear()   # watching: no coaching
 		return
 	var top := sw.dot(Sim.topspin_axis(bv))
