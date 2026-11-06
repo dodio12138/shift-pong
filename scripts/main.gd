@@ -6,6 +6,7 @@ extends "res://scripts/game/game_modes.gd"
 var cam_arg := -1   # --cam=N for this run
 var lang_arg := ""  # --lang=en|zh|ja for this run
 var nohud := false  # --nohud: just the 3D scene, for promo shots
+var hud_arg := ""   # --hud=simple|full for this run
 var shot_on_fx := ""  # --shot-on-fx=name[:ms]: screenshot that long after that skill sound
 var shot_fx_delay := 150
 var perf_log := false  # --perf (or ?perf on the web page): frame times every 3 s
@@ -59,6 +60,8 @@ func _ready() -> void:
 			shot_on_fx = bits[0]
 			if bits.size() > 1:
 				shot_fx_delay = int(bits[1])
+		elif a.begins_with("--hud="):
+			hud_arg = a.trim_prefix("--hud=")
 		elif a == "--nohud":
 			nohud = true
 		elif a == "--human-sim":
@@ -86,6 +89,8 @@ func _ready() -> void:
 	if lang_arg != "":
 		settings.lang = lang_arg
 		apply_settings()
+	if hud_arg != "":
+		settings.hud = hud_arg
 	if cam_arg >= 0:
 		cam_mode = cam_arg   # the command line beats the saved default view
 	if skill_debug:
@@ -290,15 +295,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_C, KEY_V:
 				cam_mode = (cam_mode + (1 if k == KEY_C else -1) + CAM_MODES.size()) % CAM_MODES.size()
 				flash("视角 %d/%d: %s" % [cam_mode + 1, CAM_MODES.size(), CAM_MODES[cam_mode]])
-			KEY_TAB:   # the key guide: compact -> every key -> hidden -> compact
-				if not controls_bar.visible:
-					controls_bar.visible = true
-					controls_bar.full = false
-				elif not controls_bar.full:
-					controls_bar.full = true
-				else:
-					controls_bar.visible = false
+			KEY_TAB:   # 界面信息: simple <-> full
+				settings.hud = "simple" if hud_full() else "full"
+				save_settings()
+				layout_hud()
 				controls_bar.queue_redraw()
+				flash("界面信息：%s" % ("详细" if hud_full() else "简洁"))
 			KEY_P:
 				post_mode = (post_mode + 1) % 3
 				post_mat.set_shader_parameter("mode", post_mode)
@@ -422,6 +424,10 @@ func _process(delta: float) -> void:
 	if in_tie_match:
 		if timeout_req != 0:
 			score_label.text += "  [暂停]"
+	if hud_full() and is_human(PLAYER) and drill.is_empty() and not game_over:
+		score_label.text += "  VAR 挑战 %d" % challenges[PLAYER]
+	if hud_full() and skill_on() and drill.is_empty():
+		score_label.text += "  技能乒乓球"
 	if autoplay:
 		score_label.text += "  [教练席]" if in_tie_match else ("" if clean else "  [观战]")
 	if skill_test:

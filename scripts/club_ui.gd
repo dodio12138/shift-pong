@@ -462,6 +462,14 @@ func _page_settings() -> void:
 		_apply_settings()
 	_button("开" if st.get("skill_mode", false) else "关", sk, krow, st.get("skill_mode", false))
 	_text("每局 5 张专注卡，按住 Shift 打开技能轮盘放离谱招数", C_DIM, krow)
+	var urow := _row()
+	_text("界面信息", C_YELLOW, urow)
+	for v in [["simple", "简洁"], ["full", "详细"]]:
+		var pick_u := func():
+			st.hud = v[0]
+			_apply_settings()
+		_button(v[1], pick_u, urow, str(st.get("hud", "simple")) == v[0])
+	_text("比赛中按 Tab 切换", C_DIM, urow)
 	var mrow := _row()
 	_text("音乐", C_YELLOW, mrow)
 	var mus := func():

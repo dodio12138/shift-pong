@@ -584,7 +584,6 @@ func build_hud() -> void:
 			card.offset_right = -12.0
 			card.offset_top = 74.0
 			card.offset_bottom = 136.0
-			card.compact = true
 		side_cards[side] = card
 	# 规则转移: a big SHIFT! with a cyan and a red copy split off it
 	shift_word = Control.new()
@@ -703,16 +702,81 @@ func make_rich(parent: Control, top: float) -> RichTextLabel:
 
 ## Fills a rich row. Parts: String (plain), Texture2D (icon at 1.3x),
 ## [text, Color] (coloured text) or {"key": "J"} (keycap).
+## 界面信息 (Tab, or the settings): simple shows what you play by; full adds
+## the stroke readout, key coaching, the other side's full card, the status
+## extras and every key in the guide.
+func hud_full() -> bool:
+	return str(settings.get("hud", "simple")) == "full"
+
+
 ## The line naming each stroke and its spin: while learning (tutorial and
-## drills) only; in a match the spin gauge says what you need.
+## drills), or with the full HUD.
 func shot_readout() -> bool:
-	return not drill.is_empty()
+	return not drill.is_empty() or hud_full()
 
 
 ## Which keys answer the ball coming at you: on the two gentle assist levels,
-## and always while learning.
+## with the full HUD, and always while learning.
 func coaching() -> bool:
-	return not drill.is_empty() or int(settings.get("help", 1)) <= 1
+	return not drill.is_empty() or hud_full() or int(settings.get("help", 1)) <= 1
+
+
+const HUD_M := 12.0      # the HUD's margin from the screen edges and between panels
+const CARD_W := 270.0
+const GUIDE_W := 430.0   # the compact key guide
+const GUIDE_H := 56.0
+
+
+## Places the HUD on one grid: the score at the top, the other side's card
+## top right, and along the bottom your card, the key guide and the spin gauge
+## sitting on the same line (the full key guide takes the bottom row and the
+## two lift above it). Cards grow with what they hold.
+func layout_hud() -> void:
+	var m := HUD_M
+	var full := hud_full()
+	var cb: Control = controls_bar
+	cb.full = full
+	var lift := 0.0
+	if full:
+		cb.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+		cb.offset_left = 0.0
+		cb.offset_right = 0.0
+		if cb.visible:
+			lift = GUIDE_H + 6.0
+	else:
+		cb.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+		cb.offset_left = -GUIDE_W * 0.5
+		cb.offset_right = GUIDE_W * 0.5
+	cb.offset_top = -GUIDE_H - (0.0 if full else m)
+	cb.offset_bottom = 0.0 if full else -m
+	var me: Control = side_cards[PLAYER]
+	me.offset_left = m
+	me.offset_right = m + CARD_W
+	me.offset_bottom = -m - lift
+	me.offset_top = -m - lift - me.height()
+	var them: Control = side_cards[AI]
+	them.offset_left = -m - CARD_W
+	them.offset_right = -m
+	them.offset_top = m
+	them.offset_bottom = m + them.height()
+	spin_gauge.offset_right = -m
+	spin_gauge.offset_bottom = -m - lift
+	spin_gauge.offset_left = -m - 250.0
+	spin_gauge.offset_top = -m - lift - 118.0
+	score_bar.offset_top = m
+	score_bar.offset_bottom = m + 60.0
+	# the readout and the coaching line: a column on the left that stops short
+	# of the score and wraps, the coaching under however tall the readout is
+	var half: float = (score_bar.get_parent() as Control).size.x * 0.5
+	for l in [info_label, tip_label]:
+		l.offset_left = m
+		l.offset_right = -(half + 300.0)
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info_label.offset_top = m
+	info_label.offset_bottom = m + 26.0
+	var ih: float = float(info_label.get_content_height()) if info_label.get_parsed_text() != "" else 0.0
+	tip_label.offset_top = m + ih + 4.0
+	tip_label.offset_bottom = tip_label.offset_top + 26.0
 
 
 func rich(l: RichTextLabel, parts: Array) -> void:
@@ -1591,7 +1655,7 @@ func _update_cards() -> void:
 		var lo: Array = loaded(side) if skill_on() and drill.is_empty() else []
 		c.skills = lo.map(func(s): return s.name)
 		c.keyed = me and is_human(PLAYER)
-		c.chips_above = side == PLAYER   # your card is at the bottom of the screen
+		c.compact = side == AI and not hud_full()
 		var have: int = focus_cards if me else ai_focus
 		c.spent = range(lo.size()).filter(func(i): return int(lo[i].cost) > have)
 		var tag := ""
@@ -1615,6 +1679,7 @@ func _update_cards() -> void:
 			tag = "专注中"
 		c.tag = tag
 		c.visible = drill.is_empty() or me
+	layout_hud()
 
 
 ## The game's data analysis; play pauses while it is up.

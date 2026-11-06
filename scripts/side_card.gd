@@ -4,8 +4,9 @@ extends Control
 ## the wing being prepared, focus-card pips, a status tag, and bars for how set
 ## the feet are (到位), stroke power (力度, with a notch for what the incoming
 ## ball needs) and stamina (体力, greyed past the permanent-fatigue ceiling).
-## In a skill match the four skills that side took in sit under it as chips
-## (yours with their number keys), so you know what the other side can do.
+## In a skill match the four skills that side took in sit inside it as chips
+## (yours with their number keys), and a status strip (重球, a spell on that
+## side) shows over them; the card is as tall as what it holds (height()).
 
 const C_INK := Color(0.040, 0.050, 0.100)
 const C_BAR := Color(0.15, 0.19, 0.32)
@@ -31,9 +32,18 @@ var stamina := 1.0
 var stamina_max := 1.0
 var skills: Array = []       # names of the skills taken in (empty when skills are off)
 var keyed := false           # number the chips (your side: keys 1-4)
-var chips_above := false     # the card sits at the bottom of the screen: chips go over it
 var compact := false         # the other side: name, grip, focus pips and stamina only
 var spent: Array = []        # which of them can't be afforded right now
+
+
+## How tall the card wants to be for what it shows right now.
+func height() -> float:
+	var h := 40.0 + (1 if compact else 3) * 15.0 + 4.0
+	if tag != "":
+		h += 19.0
+	if not skills.is_empty():
+		h += ((skills.size() + 1) / 2) * 19.0 + 2.0
+	return h + 6.0
 
 
 func _ready() -> void:
@@ -78,20 +88,16 @@ func _draw() -> void:
 		var y := 40.0 + k * 15.0
 		draw_string(font, Vector2(12.0, y + 10.0), tr(rows[k][0]), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, C_DIM)
 		_bar(Rect2(Vector2(bx, y + 1.0), Vector2(w - bx - 12.0, 9.0)), rows[k][1], rows[k][2], rows[k][3])
-	var below := size.y + 2.0
-	if tag != "":
-		var tw := font.get_string_size(tr(tag), HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x
-		draw_rect(Rect2(Vector2(w - tw - 18.0, below), Vector2(tw + 12.0, 17.0)), Color(C_INK, 0.85))
-		draw_string(font, Vector2(w - tw - 12.0, below + 13.0), tr(tag), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, C_GOOD)
-		below += 19.0
+	var y0 := 40.0 + rows.size() * 15.0 + 4.0
+	if tag != "":   # what's on this side right now, a strip across the card
+		draw_rect(Rect2(Vector2(10.0, y0), Vector2(w - 20.0, 16.0)), Color(C_GOOD, 0.14))
+		draw_string(font, Vector2(14.0, y0 + 12.0), tr(tag), HORIZONTAL_ALIGNMENT_LEFT, w - 28.0, 12, C_GOOD)
+		y0 += 19.0
 	# the skills taken in: two chips a row
-	var cw := (w - 6.0) * 0.5
-	var chip_rows := (skills.size() + 1) / 2
-	var top := -2.0 - chip_rows * 19.0 if chips_above else below
+	var cw := (w - 26.0) * 0.5
 	for i in skills.size():
-		var r := Rect2(Vector2((i % 2) * (cw + 6.0), top + (i / 2) * 19.0), Vector2(cw, 17.0))
-		draw_rect(r, Color(C_INK, 0.85))
-		draw_rect(r, accent if not spent.has(i) else C_BAR, false, 1.0)
+		var r := Rect2(Vector2(10.0 + (i % 2) * (cw + 6.0), y0 + (i / 2) * 19.0), Vector2(cw, 16.0))
+		draw_rect(r, Color(accent, 0.16) if not spent.has(i) else Color(C_BAR, 0.4))
 		var label: String = ("%d %s" % [i + 1, tr(skills[i])]) if keyed else tr(skills[i])
 		draw_string(font, r.position + Vector2(6.0, 13.0), label, HORIZONTAL_ALIGNMENT_LEFT, cw - 10.0, 12,
 				C_WHITE if not spent.has(i) else C_BAR)
