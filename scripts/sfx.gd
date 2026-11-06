@@ -7,7 +7,9 @@ extends Node
 ## picks a random clip from its group with pitch / volume jitter so nothing
 ## repeats exactly. Net and floor contacts reuse table bounces pitched down.
 ## Positional sounds play in the 3D world so they pan and fade. No crowd or
-## voices: the match recording has commentary behind them.
+## voices: the match recording has commentary behind them. The music (a menu
+## and a match loop) and the skill sounds are little chiptunes made by
+## tools/make_audio.py.
 
 const POOL := 14
 const GROUPS := {"hit_hard": 10, "hit": 10, "table": 10, "step": 5, "squeak": 8}
@@ -18,6 +20,15 @@ var _rng := RandomNumberGenerator.new()
 var _pool: Array[AudioStreamPlayer3D] = []
 var _next := 0
 var _clips := {}         # group -> Array[AudioStream]
+var _ui: Array[AudioStreamPlayer] = []   # skill sounds, jingles, clicks: not in the 3D world
+var _ui_next := 0
+var _fx := {}            # name -> AudioStream (sounds/fx)
+var _music: AudioStreamPlayer
+var _tracks := {}        # "menu" | "match" -> AudioStreamOggVorbis
+var _track := ""
+var last := {"name": "", "t": 0}   # the last named sound and when (ms), for debug screenshots
+const FX := ["blink", "flip", "gravity", "view", "cast", "shift", "click", "win", "lose"]
+const MUSIC_DB := -11.0
 
 
 func setup(world_node: Node3D) -> void:
@@ -28,6 +39,21 @@ func setup(world_node: Node3D) -> void:
 		_clips[g] = []
 		for i in GROUPS[g]:
 			_clips[g].append(load("res://sounds/real/%s_%d.%s" % [g, i, EXT.get(g, "wav")]))
+	for k in FX:
+		_fx[k] = load("res://sounds/fx/%s.wav" % k)
+	for i in 4:
+		var u := AudioStreamPlayer.new()
+		u.bus = "SFX"
+		add_child(u)
+		_ui.append(u)
+	for k in ["menu", "match"]:
+		var st: AudioStreamOggVorbis = load("res://sounds/music/%s.ogg" % k)
+		st.loop = true
+		_tracks[k] = st
+	_music = AudioStreamPlayer.new()
+	_music.bus = "Music"
+	_music.volume_db = MUSIC_DB
+	add_child(_music)
 	for i in POOL:
 		var p := AudioStreamPlayer3D.new()
 		p.bus = "SFX"
@@ -89,6 +115,33 @@ func focus(on: bool) -> void:
 	AudioServer.playback_speed_scale = 0.75 if on else 1.0
 
 
+## A skill, jingle or click by name (see FX), at the same loudness everywhere.
+func fx(name: String, db := -4.0) -> void:
+	var u := _ui[_ui_next]
+	_ui_next = (_ui_next + 1) % _ui.size()
+	u.stream = _fx[name]
+	last = {"name": name, "t": Time.get_ticks_msec()}
+	u.volume_db = db
+	u.play()
+
+
+## Switches to the "menu" or "match" loop ("" for silence), fading across.
+func music(name: String) -> void:
+	if name == _track:
+		return
+	_track = name
+	var tw := _music.create_tween()
+	tw.tween_property(_music, "volume_db", -40.0, 0.35)
+	tw.tween_callback(func():
+		if _track == "":
+			_music.stop()
+			return
+		_music.stream = _tracks[_track]
+		_music.play()
+		_music.volume_db = -40.0)
+	tw.tween_property(_music, "volume_db", MUSIC_DB, 0.6)
+
+
 # ------------------------------------------------------------------ playback
 
 func _play(group: String, at: Vector3, db: float, pitch: float) -> void:
@@ -103,7 +156,7 @@ func _play(group: String, at: Vector3, db: float, pitch: float) -> void:
 
 
 func _make_buses() -> void:
-	for b in ["SFX"]:
+	for b in ["SFX", "Music"]:
 		if AudioServer.get_bus_index(b) == -1:
 			AudioServer.add_bus()
 			var i := AudioServer.bus_count - 1

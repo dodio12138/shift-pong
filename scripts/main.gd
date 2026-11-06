@@ -6,6 +6,8 @@ extends "res://scripts/game/game_modes.gd"
 var cam_arg := -1   # --cam=N for this run
 var lang_arg := ""  # --lang=en|zh|ja for this run
 var nohud := false  # --nohud: just the 3D scene, for promo shots
+var shot_on_fx := ""  # --shot-on-fx=name[:ms]: screenshot that long after that skill sound
+var shot_fx_delay := 150
 var perf_log := false  # --perf (or ?perf on the web page): frame times every 3 s
 
 
@@ -52,6 +54,11 @@ func _ready() -> void:
 			clean = true
 		elif a == "--perf":
 			perf_log = true
+		elif a.begins_with("--shot-on-fx="):
+			var bits := a.trim_prefix("--shot-on-fx=").split(":")
+			shot_on_fx = bits[0]
+			if bits.size() > 1:
+				shot_fx_delay = int(bits[1])
 		elif a == "--nohud":
 			nohud = true
 		elif a == "--human-sim":
@@ -84,6 +91,7 @@ func _ready() -> void:
 	if skill_debug:
 		settings.skill_mode = true
 	tour = Tour.new()
+	prewarm_fx()
 	var direct := autoplay or serve_demo or shot_on_heavy or shot_on_var or shot_on_style != ""
 	if gear_debug != "":
 		tour.mine().players[0]["gear"] = {"blade": "wood5", "fh": gear_debug, "bh": gear_debug}
@@ -367,6 +375,8 @@ func _process(delta: float) -> void:
 		update_replay(delta)
 	update_camera(delta)
 	update_visuals(delta)
+	if sfx != null:   # a calm loop on the menus, a faster one in play
+		sfx.music("" if not bool(settings.get("music", true)) else ("menu" if club_ui.visible else "match"))
 	var_overlay()
 	for side in [PLAYER, AI]:
 		(board_digits[side] as Label3D).text = str(score[side])
@@ -435,6 +445,8 @@ func _process(delta: float) -> void:
 			if swing_style[sd] == shot_on_style and swing[sd] > 0.05:
 				shot_now = true
 		shot_now = shot_now or elapsed > 120.0
+	if shot_on_fx != "":
+		shot_now = (sfx.last.name == shot_on_fx and Time.get_ticks_msec() - int(sfx.last.t) >= shot_fx_delay) or elapsed > 150.0
 	if shot_on_var:
 		shot_now = (not replay.is_empty() and replay.kind == "var" and replay.t >= replay.focus_t) or elapsed > 300.0
 	if shot_on_heavy:

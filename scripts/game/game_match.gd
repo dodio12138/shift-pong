@@ -316,6 +316,9 @@ func _score_point(winner: int, reason: String) -> void:
 	if (a >= game_to or b >= game_to) and absi(a - b) >= 2:
 		if adapt_on():
 			adapt_carry = clampf((b - a - 4) / 14.0, -0.2, 0.4)   # a heavy defeat eases the next game from the start
+		var match_won: bool = best_of <= 1 or games[winner] + 1 > best_of / 2
+		if match_won and is_human(PLAYER) and drill.is_empty():
+			sfx.fx("win" if winner == PLAYER else "lose", -3.0)
 		if best_of <= 1:
 			game_over = true
 			games[winner] += 1          # a one-game match (a tie's single) still has a winner on the books
@@ -437,6 +440,7 @@ func _step_decoy(dt: float) -> void:
 ## 金蝉脱壳: alongside the real ball, a decoy with the same pace and spin flies
 ## to the other side of the table. An AI receiver may follow the decoy.
 func _launch_decoy(side: int, target: Vector3, v: Vector3, w: Vector3) -> void:
+	sfx.fx("cast")
 	var tx: float = -target.x if absf(target.x) > 0.25 else (0.5 if target.x <= 0.0 else -0.5)
 	var dt := Vector3(clampf(tx, -0.65, 0.65), 0.0, target.z)
 	var dv := Sim.solve_shot(bp, dt, Vector2(v.x, v.z).length(), w)
@@ -480,6 +484,8 @@ func _launch_trick(kind: String, side: int, target: Vector3) -> void:
 	trick = {"kind": kind, "recv": recv, "z0": bp.z, "zl": float(land.pos.z), "xl": float(land.pos.x), "t": 0.0,
 			"T": maxf(float(land.t), 0.2), "dir": dir, "off": 0.0, "hidden": false, "fooled": false, "done": false}
 	flash({"andu": "暗渡陈仓！", "huima": "回马枪！", "bianshu": "鬼步变速！", "blink": "乾坤挪移！", "flip": "斗转星移！"}[kind])
+	if kind != "blink" and kind != "flip":
+		sfx.fx("cast")   # those two sound when they happen, not when they're hit
 	if not is_human(recv) and randf() > 0.35 + 0.4 * float(lv_of(recv).ai_read):
 		trick.fooled = true
 		match kind:
@@ -528,6 +534,7 @@ func _trick_after_step(dt: float) -> void:
 				if absf(trick.xl + d) > edge:
 					d = -d if absf(trick.xl - d) <= edge else signf(d) * maxf(edge - absf(trick.xl), 0.0)
 				fx_blink(bp, bp + Vector3(d, 0.0, 0.0))
+				sfx.fx("blink")
 				bp.x += d
 				var recv: int = trick.recv
 				if not is_human(recv) and not trick.fooled:
@@ -571,6 +578,7 @@ func cast_hex(kind: String, caster: int, quiet := false) -> void:
 			fx_narrow(on)
 	if quiet:
 		return
+	sfx.fx(kind if kind in ["gravity", "view"] else "cast")
 	flash({"spoon": "偷梁换柱！", "narrow": "缩地成寸！", "giant": "巨灵神拍！", "gravity": "重力转移！", "view": "视角转移！"}[kind])
 	if not gstats.is_empty():
 		gstats.skills[caster] += 1
@@ -587,7 +595,8 @@ func rule_shift() -> void:
 		cast_hex(kind, side, true)
 	cam_shake = maxf(cam_shake, 0.5)
 	fx_shift()
-	banner_label.text += "\nSHIFT!  规则转移：%s（两分）" % RULE_SHIFTS[kind]
+	sfx.fx("shift", -2.0)
+	banner_label.text += "\n规则转移：%s（两分）" % RULE_SHIFTS[kind]
 	print("[shift] rule %s" % kind)
 
 
@@ -642,6 +651,7 @@ func on_table_bounce(side: int) -> void:
 		if trick.kind == "flip":
 			bw = -bw            # 斗转星移: the spin turns round off the table
 			fx_flip(bp)
+			sfx.fx("flip")
 			hit_pred[side] = Sim.predict_path(bp, bv, bw, side, 0, true)
 			if not is_human(side) and not trick.fooled:
 				_repredict(side, 0.12)

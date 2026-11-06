@@ -462,6 +462,12 @@ func _page_settings() -> void:
 		_apply_settings()
 	_button("开" if st.get("skill_mode", false) else "关", sk, krow, st.get("skill_mode", false))
 	_text("每局 5 张专注卡，按住 Shift 打开技能轮盘放离谱招数", C_DIM, krow)
+	var mrow := _row()
+	_text("音乐", C_YELLOW, mrow)
+	var mus := func():
+		st.music = not bool(st.get("music", true))
+		_apply_settings()
+	_button("开" if st.get("music", true) else "关", mus, mrow, st.get("music", true))
 	var lrow := _row()
 	_text("按键说明栏", C_YELLOW, lrow)
 	var leg := func():
@@ -491,11 +497,33 @@ func _page_title() -> void:
 	logo.custom_minimum_size = Vector2(0.0, logo.texture.get_height() + 8.0)
 	_box.add_child(logo)
 	_gap()
+	if not bool(main.settings.get("tut_offered", false)):
+		# the very first time: the two-minute lessons, or straight in
+		var first := _card(_box)
+		_text("第一次玩？先花两分钟学会接球、发球和 Shift 技能。", C_YELLOW, first)
+		var frow := HBoxContainer.new()
+		frow.add_theme_constant_override("separation", 8)
+		first.add_child(frow)
+		var learn := func():
+			main.settings.tut_offered = true
+			main.save_settings()
+			main.start_tutorial("practice")
+		var skip := func():
+			main.settings.tut_offered = true
+			main.save_settings()
+			show_page("title")
+		_focus = _button("新手教学", learn, frow, true)
+		_button("跳过", skip, frow)
+		_gap()
 	var on_run: bool = main.shift_run != null and not main.shift_run.is_over()
-	_focus = _button("继续 SHIFT RUN" if on_run else "SHIFT RUN", func(): show_page("run" if on_run else "run_setup"))
+	var rb := _button("继续 SHIFT RUN" if on_run else "SHIFT RUN", func(): show_page("run" if on_run else "run_setup"))
+	if _focus == null:
+		_focus = rb
 	var best := int(main.settings.get("run_best", 0))
 	var rl := _text("连打 %d 个对手，赢一场换一个技能" % main.ShiftRun.STAGES + ("   最佳：%d / %d" % [best, main.ShiftRun.STAGES] if best > 0 else ""), C_SKY)
 	rl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_button("快速开始", func(): main.quick_start())
+	_text("直接打一局 7 分，带技能", C_DIM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_button("杯赛", func(): show_page("cups"))
 	_text("个人赛 · 团体赛 · BOSS 挑战", C_DIM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_button("训练场", func(): show_page("practice"))
@@ -1417,6 +1445,7 @@ func _button(s: String, cb: Callable, parent: Control = null, selected := false)
 	b.add_theme_color_override("font_hover_color", C_YELLOW)
 	b.add_theme_color_override("font_focus_color", C_YELLOW)
 	b.add_theme_color_override("font_disabled_color", C_BAR)
+	b.pressed.connect(func(): main.sfx.fx("click", -10.0))
 	b.pressed.connect(cb)
 	(parent if parent != null else _box).add_child(b)
 	return b
