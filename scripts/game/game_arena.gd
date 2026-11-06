@@ -590,10 +590,11 @@ func build_hud() -> void:
 	shift_word.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(shift_word)
 	shift_word.set_anchors_and_offsets_preset(Control.PRESET_HCENTER_WIDE)
-	shift_word.anchor_top = 0.14
-	shift_word.anchor_bottom = 0.14
+	shift_word.anchor_top = 0.09
+	shift_word.anchor_bottom = 0.09
 	for col in [C_SKY, C_RED, C_YELLOW]:
-		var l := make_label(shift_word, 48, Control.PRESET_HCENTER_WIDE, HORIZONTAL_ALIGNMENT_CENTER)
+		var l := make_label(shift_word, 96, Control.PRESET_HCENTER_WIDE, HORIZONTAL_ALIGNMENT_CENTER)
+		l.add_theme_constant_override("outline_size", 10)
 		l.text = "SHIFT!"
 		l.add_theme_color_override("font_color", col)
 		l.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -1636,6 +1637,29 @@ func fx_burst(at: Vector3, col: Color, amount: int, speed: float) -> void:
 	get_tree().create_timer(1.2).timeout.connect(p.queue_free)
 
 
+## WebGL compiles a material's shader the first time something with it is
+## drawn, which stalls that frame (a skill's first sparks, the decoy's first
+## flight). Drawing every hidden thing and one of each effect for a couple of
+## frames while the game loads moves those stalls to the start.
+func prewarm_fx() -> void:
+	var shown: Array = []
+	var walk := func(n: Node, f: Callable) -> void:
+		if n is VisualInstance3D and not n.visible:
+			n.visible = true
+			shown.append(n)
+		for c in n.get_children():
+			f.call(c, f)
+	walk.call(world, walk)
+	var under := Vector3(0.0, -0.3, 0.0)   # below the floor: drawn, never seen
+	fx_burst(under, C_WHITE, 1, 0.0)
+	fx_word(under, "·", C_WHITE)
+	for i in 3:
+		await get_tree().process_frame
+	for n in shown:
+		if is_instance_valid(n):
+			n.visible = false
+
+
 ## A word that pops up over a spot and floats away.
 func fx_word(at: Vector3, text: String, col: Color) -> void:
 	var l := Label3D.new()
@@ -1697,8 +1721,8 @@ func fx_shift() -> void:
 	tw.tween_callback(func(): shift_word.visible = false)
 	for i in 2:
 		var l: Label = ls[i]
-		var off := Vector2(-6.0, -2.0) if i == 0 else Vector2(6.0, 2.0)
-		l.position = off * 3.0
+		var off := Vector2(-5.0, 0.0) if i == 0 else Vector2(5.0, 0.0)
+		l.position = off * 4.0
 		var t2 := l.create_tween()
 		t2.tween_property(l, "position", off, 0.25).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
@@ -1750,6 +1774,7 @@ func fx_giant(side: int, on: bool) -> void:
 ## 铜墙铁壁 goes up: near-instant, overshooting a touch before it settles;
 ## stars and smoke burst along the net and the camera jolts.
 func raise_wall(from_side: int) -> void:
+	sfx.fx("cast")
 	wall_from = from_side
 	if wall_tween != null:
 		wall_tween.kill()

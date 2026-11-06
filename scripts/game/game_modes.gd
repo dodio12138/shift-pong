@@ -310,6 +310,14 @@ func skill_test_play(from := "practice") -> void:
 	_quick_match()
 
 
+## 快速开始 from the title screen: straight into one game to 7 with skills.
+func quick_start() -> void:
+	skill_test = false
+	menu_from = "title"
+	game_to = 7
+	_quick_match()
+
+
 func _quick_match() -> void:
 	club_ui.visible = false
 	in_tie_match = false

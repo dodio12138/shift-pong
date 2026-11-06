@@ -348,7 +348,7 @@ var boss_id := ""                  # set while a boss challenge is on
 var boss_auto := ""                # debug: play this boss hands-off and quit
 # the player's settings, and the legends beaten so far
 var settings := {"volume": 8, "pixel": 0, "cam": 0, "legend": true, "skill_mode": true, "help": 1, "lang": "en", "beaten": [],
-		"loadout": ["jinchan", "blink", "giant", "gravity"], "run_best": 0}
+		"loadout": ["jinchan", "blink", "giant", "gravity"], "run_best": 0, "tut_offered": false, "music": true}
 const LANGS := [["en", "English"], ["zh", "简体中文"], ["ja", "日本語"]]
 const SETTINGS_PATH := "user://settings.cfg"
 var mstats := {}                   # this match's technical stats per side, plus rally lengths
