@@ -1,6 +1,8 @@
 extends RefCounted
 ## SHIFT RUN (the jam's main mode): six opponents in a row, each a single game
-## to 7, the last one a legend. You start with your loadout of four skills;
+## to 7, the last one a legend. The ladder is set by the player you take in:
+## from well below them up to a little above, the legend brought down (or up)
+## to a few points over them, so any pick makes the same climb. You start with your loadout of four skills;
 ## after every win three new ones are offered and one may be shifted in for one
 ## you have. Two hearts: a loss costs one and the same opponent comes again;
 ## with none left the run is over.
@@ -12,6 +14,8 @@ const Tour := preload("res://scripts/tour.gd")
 const STAGES := 6
 const HEARTS := 2
 const GAME_TO := 7                 # points a game in a run
+const STEPS := [-12, -8, -5, -2, 2]  # each field opponent's overall, against yours
+const BOSS_OVER := 6               # the legend's overall, against yours
 
 var me: Dictionary                 # the player you took in
 var ladder: Array = []             # the opponents, weakest first; the last a legend
@@ -31,14 +35,26 @@ func _init(player: Dictionary, start_loadout: Array) -> void:
 		for p in c.players:
 			if p.name != me.name:
 				pool.append(p)
-	pool.sort_custom(func(x, y): return Roster.overall(x) < Roster.overall(y))
-	# five from the field, spread from the weaker end to the strong
-	for k in STAGES - 1:
-		var at := int(lerpf(0.05, 0.92, float(k) / float(STAGES - 2)) * (pool.size() - 1))
-		ladder.append(pool[at])
+	var mine := Roster.overall(me)
+	# five from the field, each the one nearest its step that isn't taken yet
+	for step in STEPS:
+		var best: Dictionary = pool[0]
+		for p in pool:
+			if absi(Roster.overall(p) - (mine + step)) < absi(Roster.overall(best) - (mine + step)):
+				best = p
+		ladder.append(best)
+		pool.erase(best)
 	var b: Dictionary = Roster.BOSSES.pick_random().duplicate(true)
+	_rate_to(b, mine + BOSS_OVER)
 	People.ensure(b)
 	ladder.append(b)
+
+
+## Scales all of a player's ratings so their overall comes out near `target`.
+static func _rate_to(p: Dictionary, target: int) -> void:
+	for i in 4:   # overall isn't quite linear in the ratings: a few passes settle it
+		var k := float(target) / float(maxi(Roster.overall(p), 1))
+		p.a = p.a.map(func(v): return clampf(roundf(v * k), 40.0, 99.0))
 
 
 func opponent() -> Dictionary:

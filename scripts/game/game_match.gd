@@ -50,16 +50,6 @@ func pick_loadouts() -> void:
 		flash("对方携带：%s" % "、".join(PackedStringArray(loaded(AI).map(func(s): return s.name))))
 
 
-## A side's loadout as skill slots (id, name, desc, cost), in loadout order.
-func loaded(side: int) -> Array:
-	var out := []
-	for id in loadout[side]:
-		for s in SKILL_SLOTS:
-			if s.id == id:
-				out.append(s)
-	return out
-
-
 ## A fresh game within the match: the score, who serves first (it alternates
 ## game by game), focus cards (five per game).
 func start_game() -> void:
@@ -1243,8 +1233,8 @@ func prepare_receiver(side: int, skip: int) -> void:
 	react_timer[side] = randf_range(0.12, 0.22) * (1.25 - 0.15 * level_of(side))
 	aim_err[side] = Vector3(randf_range(-0.07, 0.07), randf_range(-0.05, 0.05), 0.0)
 	if hexes.view[side] > 0 and not is_human(side):   # 视角转移: it loses its bearings
-		react_timer[side] += 0.12
-		aim_err[side] *= 2.2
+		react_timer[side] += 0.2
+		aim_err[side] *= 3.0
 	if not is_human(side) and hit_pred[side].ok:
 		plan[side] = plan_return(side, hit_pred[side].pts)
 	# heavy balls smoke and glow whoever hit them; when one comes at you it also

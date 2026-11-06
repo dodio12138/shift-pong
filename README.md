@@ -35,7 +35,7 @@ Debug flags (after `--`): `--autoplay`, `--level=0..4`, `--tie-auto`, `--boss-au
 
 ## Audio
 The match sounds are real recordings (see `sounds/CREDITS.md`); the music and
-the skill sounds are chiptunes made from scratch by `tools/make_audio.py`.
+the skill sounds are synthesised from scratch by `tools/make_audio.py` (soft synths, rock drums and a power-chord guitar in the match track).
 
 ## Tests
 `godot --headless --path . -s tools/menu_flow_test.gd -- --nosave` opens every

@@ -1572,6 +1572,12 @@ func _update_cards() -> void:
 		c.cards = focus_cards if me else (ai_focus if skill_on() else 0)
 		c.cards_max = FOCUS_MAX if me or skill_on() else 0
 		c.focus_active = me and focus_until_ms > 0
+		var lo: Array = loaded(side) if skill_on() and drill.is_empty() else []
+		c.skills = lo.map(func(s): return s.name)
+		c.keyed = me and is_human(PLAYER)
+		c.chips_above = side == PLAYER   # your card is at the bottom of the screen
+		var have: int = focus_cards if me else ai_focus
+		c.spent = range(lo.size()).filter(func(i): return int(lo[i].cost) > have)
 		var tag := ""
 		if heavy and ball_live and not point_over and last_hitter == side:
 			tag = "重球！"
