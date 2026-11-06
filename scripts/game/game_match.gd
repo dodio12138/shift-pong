@@ -142,7 +142,7 @@ func start_point() -> void:
 	serve_x = randf_range(-0.5, 0.5)
 	rally = 0
 	banner_label.text = ""
-	if server == PLAYER and not autoplay and (serve_hints > 0 or not drill.is_empty()):
+	if server == PLAYER and not autoplay and (serve_hints > 0 or not drill.is_empty() or hud_full()):
 		serve_hints -= 1   # the keys for a serve, only the first few times
 		rich(tip_label, [{"key": "Q"}, {"key": "W"}, {"key": "E"}, Icons.spin("top"), "    ", {"key": "A"}, {"key": "S"}, {"key": "D"},
 				Icons.spin("back"), "    ", Icons.hold_release(), "      ", {"key": "空格"}, Icons.spin("none")])

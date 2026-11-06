@@ -2,7 +2,7 @@ extends Control
 ## Bottom controls legend. The six stroke keys are drawn as a little keyboard
 ## (Q W E / A S D) with the spin each one puts on the ball printed on the key;
 ## keys and mouse buttons light up while held. Compact by default (strokes,
-## serve, skills); Tab shows every key, Tab again hides it.
+## serve, skills); the full HUD (Tab) shows every key.
 
 const Icons := preload("res://scripts/icons.gd")
 const C_INK := Color(0.040, 0.050, 0.100)
@@ -39,8 +39,8 @@ func _notification(what: int) -> void:
 
 
 func _draw() -> void:
-	# compact, the strip only runs as far as its few keys
-	draw_rect(Rect2(Vector2.ZERO, Vector2(size.x if full else minf(size.x, 430.0), size.y)), Color(C_INK, 0.78))
+	draw_rect(Rect2(Vector2.ZERO, size), Color(C_INK, 0.82))
+	draw_rect(Rect2(Vector2.ZERO, size), C_DIM, false, 1.0)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(SCALE, SCALE))
 	var lmb := Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
 	var rmb := Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
@@ -63,7 +63,7 @@ func _draw() -> void:
 		x = key(x, y, "空格", KEY_SPACE)
 		y += ROW_H
 		x = 250.0
-		for item in [["Shift", KEY_SHIFT, "技能轮盘"], ["T", KEY_T, "专注卡"], ["Tab", KEY_TAB, "全部按键"]]:
+		for item in [["Shift", KEY_SHIFT, "技能轮盘"], ["T", KEY_T, "专注卡"], ["Tab", KEY_TAB, "详细信息"]]:
 			x = key(x, y, item[0], item[1])
 			x = text(x, y, item[2], C_DIM) + 4.0
 		return
@@ -87,7 +87,7 @@ func _draw() -> void:
 	x = text(x, y, "发球: 按住选旋转, 松开发出", C_WHITE)
 	x = key(x, y, "空格", KEY_SPACE)
 	x = icon(x, y, Icons.spin("none")) + 18.0
-	for item in [["L", KEY_L, "难度"], ["G", KEY_G, "握拍"], ["T", KEY_T, "专注卡"], ["B", KEY_B, "回放"], ["C/V", KEY_C, "视角"], ["Tab", KEY_TAB, "收起"], 
+	for item in [["L", KEY_L, "难度"], ["G", KEY_G, "握拍"], ["T", KEY_T, "专注卡"], ["B", KEY_B, "回放"], ["C/V", KEY_C, "视角"], ["Tab", KEY_TAB, "简洁"], 
 			["F", KEY_F, "观战"], ["R", KEY_R, "重开"], ["Y", KEY_Y, "暂停"], ["M", KEY_M, "菜单"], ["Shift", KEY_SHIFT, "技能轮盘 / 假动作发球"], ["1-4", KEY_1, "技能"], ["I", KEY_I, "数据"]]:
 		x = key(x, y, item[0], item[1])
 		x = text(x, y, item[2], C_DIM) + 4.0
