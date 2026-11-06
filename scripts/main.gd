@@ -290,8 +290,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_C, KEY_V:
 				cam_mode = (cam_mode + (1 if k == KEY_C else -1) + CAM_MODES.size()) % CAM_MODES.size()
 				flash("视角 %d/%d: %s" % [cam_mode + 1, CAM_MODES.size(), CAM_MODES[cam_mode]])
-			KEY_TAB:
-				controls_bar.visible = not controls_bar.visible
+			KEY_TAB:   # the key guide: compact -> every key -> hidden -> compact
+				if not controls_bar.visible:
+					controls_bar.visible = true
+					controls_bar.full = false
+				elif not controls_bar.full:
+					controls_bar.full = true
+				else:
+					controls_bar.visible = false
+				controls_bar.queue_redraw()
 			KEY_P:
 				post_mode = (post_mode + 1) % 3
 				post_mat.set_shader_parameter("mode", post_mode)
@@ -383,7 +390,7 @@ func _process(delta: float) -> void:
 		(board_serve[side] as MeshInstance3D).visible = server == side and not game_over
 	# behind the club menu only the rally shows, none of the playing HUD
 	var hud_a := 0.0 if club_ui.visible else 1.0
-	for c in [info_label, tip_label, spin_gauge, controls_bar, score_bar, side_cards[PLAYER], side_cards[AI]]:
+	for c in [info_label, tip_label, spin_gauge, controls_bar, score_bar, side_cards[PLAYER], side_cards[AI], banner_label]:
 		(c as CanvasItem).modulate.a = hud_a
 	if skill_test:   # 技能对轰: the cards never run out
 		focus_cards = FOCUS_MAX

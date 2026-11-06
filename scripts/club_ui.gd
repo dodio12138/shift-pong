@@ -499,11 +499,9 @@ func _page_title() -> void:
 	_gap()
 	if not bool(main.settings.get("tut_offered", false)):
 		# the very first time: the two-minute lessons, or straight in
-		var first := _card(_box)
-		_text("第一次玩？先花两分钟学会接球、发球和 Shift 技能。", C_YELLOW, first)
-		var frow := HBoxContainer.new()
-		frow.add_theme_constant_override("separation", 8)
-		first.add_child(frow)
+		var frow := _row()
+		frow.alignment = BoxContainer.ALIGNMENT_CENTER
+		_text("第一次玩？", C_YELLOW, frow)
 		var learn := func():
 			main.settings.tut_offered = true
 			main.save_settings()
@@ -512,31 +510,53 @@ func _page_title() -> void:
 			main.settings.tut_offered = true
 			main.save_settings()
 			show_page("title")
-		_focus = _button("新手教学", learn, frow, true)
+		_focus = _button("两分钟新手教学", learn, frow, true)
 		_button("跳过", skip, frow)
 		_gap()
+	# one line under the buttons says what the one you point at does
+	var hint := Label.new()
 	var on_run: bool = main.shift_run != null and not main.shift_run.is_over()
+	var best := int(main.settings.get("run_best", 0))
+	var run_hint := "连打 %d 个对手，赢一场换一个技能" % main.ShiftRun.STAGES + ("   最佳：%d / %d" % [best, main.ShiftRun.STAGES] if best > 0 else "")
 	var rb := _button("继续 SHIFT RUN" if on_run else "SHIFT RUN", func(): show_page("run" if on_run else "run_setup"))
+	rb.add_theme_font_size_override("font_size", 16)
+	rb.custom_minimum_size = Vector2(360.0, 40.0)
+	_hint_on(rb, run_hint, hint)
 	if _focus == null:
 		_focus = rb
-	var best := int(main.settings.get("run_best", 0))
-	var rl := _text("连打 %d 个对手，赢一场换一个技能" % main.ShiftRun.STAGES + ("   最佳：%d / %d" % [best, main.ShiftRun.STAGES] if best > 0 else ""), C_SKY)
-	rl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_button("快速开始", func(): main.quick_start())
-	_text("直接打一局 7 分，带技能", C_DIM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_button("杯赛", func(): show_page("cups"))
-	_text("个人赛 · 团体赛 · BOSS 挑战", C_DIM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_button("训练场", func(): show_page("practice"))
-	_text("新手教学 · 训练项目 · 自由对练", C_DIM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_loadout_button(_box, "title")
+	var modes := _row()
+	modes.add_theme_constant_override("separation", 6)
+	for m in [["快速开始", func(): main.quick_start(), "直接打一局 7 分，带技能"],
+			["杯赛", func(): show_page("cups"), "个人赛 · 团体赛 · BOSS 挑战"],
+			["训练场", func(): show_page("practice"), "新手教学 · 训练项目 · 自由对练"]]:
+		var b := _button(m[0], m[1], modes)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_hint_on(b, m[2], hint)
+	hint.text = run_hint
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.add_theme_color_override("font_color", C_SKY)
+	hint.add_theme_font_size_override("font_size", 12)
+	_box.add_child(hint)
 	_gap()
 	var row := _row()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	var lo := func():
+		loadout_back = "title"
+		show_page("loadout")
+	var lb := _button("技能装载", lo, row)
+	lb.icon = UIcons.get_icon("star")
+	_hint_on(lb, "、".join(PackedStringArray(main.settings.loadout.map(func(id): return tr(_skill(id).get("name", "?"))))), hint)
 	var sets := func():
 		settings_back = "title"
 		show_page("settings")
 	_button("设置", sets, row)
 	_button("退出", func(): get_tree().quit(), row)
+
+
+## Shows `text` in `label` while the mouse or the keyboard focus is on `b`.
+func _hint_on(b: Control, text: String, label: Label) -> void:
+	b.mouse_entered.connect(func(): label.text = text)
+	b.focus_entered.connect(func(): label.text = text)
 
 
 func _page_cups() -> void:
