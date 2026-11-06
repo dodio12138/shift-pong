@@ -1,7 +1,8 @@
 extends Control
 ## Bottom controls legend. The six stroke keys are drawn as a little keyboard
 ## (Q W E / A S D) with the spin each one puts on the ball printed on the key;
-## keys and mouse buttons light up while held.
+## keys and mouse buttons light up while held. Compact by default (strokes,
+## serve, skills); Tab shows every key, Tab again hides it.
 
 const Icons := preload("res://scripts/icons.gd")
 const C_INK := Color(0.040, 0.050, 0.100)
@@ -13,6 +14,8 @@ const CAP := Vector2(66.0, 42.0)
 const SCALE := 0.5    # whole legend is drawn at this size (24px text -> 12px pixel font); Tab hides it
 
 # letter, keycode, main spin icon, side spin icon
+var full := false     # every key, not just the few you need to play
+
 const CLUSTER := [
 	[["Q", KEY_Q, "top", "side_l"], ["W", KEY_W, "top", ""], ["E", KEY_E, "top", "side_r"]],
 	[["A", KEY_A, "back", "side_l"], ["S", KEY_S, "back", ""], ["D", KEY_D, "back", "side_r"]],
@@ -74,7 +77,12 @@ func _draw() -> void:
 	x = text(x, y, "发球: 按住选旋转, 松开发出", C_WHITE)
 	x = key(x, y, "空格", KEY_SPACE)
 	x = icon(x, y, Icons.spin("none")) + 18.0
-	for item in [["L", KEY_L, "难度"], ["G", KEY_G, "握拍"], ["T", KEY_T, "专注卡"], ["B", KEY_B, "回放"], ["C/V", KEY_C, "视角"], ["Tab", KEY_TAB, "隐藏"], 
+	if not full:
+		for item in [["Shift", KEY_SHIFT, "技能轮盘"], ["T", KEY_T, "专注卡"], ["Tab", KEY_TAB, "全部按键"]]:
+			x = key(x, y, item[0], item[1])
+			x = text(x, y, item[2], C_DIM) + 4.0
+		return
+	for item in [["L", KEY_L, "难度"], ["G", KEY_G, "握拍"], ["T", KEY_T, "专注卡"], ["B", KEY_B, "回放"], ["C/V", KEY_C, "视角"], ["Tab", KEY_TAB, "收起"], 
 			["F", KEY_F, "观战"], ["R", KEY_R, "重开"], ["Y", KEY_Y, "暂停"], ["M", KEY_M, "菜单"], ["Shift", KEY_SHIFT, "技能轮盘 / 假动作发球"], ["1-4", KEY_1, "技能"], ["I", KEY_I, "数据"]]:
 		x = key(x, y, item[0], item[1])
 		x = text(x, y, item[2], C_DIM) + 4.0

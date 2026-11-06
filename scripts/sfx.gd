@@ -155,6 +155,9 @@ func _play(group: String, at: Vector3, db: float, pitch: float) -> void:
 	p.play()
 
 
+## The SFX and Music buses and the focus-card muffle on Master (off) come from
+## default_bus_layout.tres: buses added from code at runtime never reach the
+## speakers in the web build. This only fills in if that file is missing.
 func _make_buses() -> void:
 	for b in ["SFX", "Music"]:
 		if AudioServer.get_bus_index(b) == -1:
@@ -163,7 +166,8 @@ func _make_buses() -> void:
 			AudioServer.set_bus_name(i, b)
 			AudioServer.set_bus_send(i, "Master")
 	var master := AudioServer.get_bus_index("Master")
-	var lp := AudioEffectLowPassFilter.new()   # focus card muffle, off by default
-	lp.cutoff_hz = 900.0
-	AudioServer.add_bus_effect(master, lp, 0)
-	AudioServer.set_bus_effect_enabled(master, 0, false)
+	if AudioServer.get_bus_effect_count(master) == 0:
+		var lp := AudioEffectLowPassFilter.new()   # focus card muffle, off by default
+		lp.cutoff_hz = 900.0
+		AudioServer.add_bus_effect(master, lp, 0)
+		AudioServer.set_bus_effect_enabled(master, 0, false)
