@@ -7,6 +7,7 @@ extends "res://scripts/game/game_arena.gd"
 
 ## A fresh match: games, stamina and fatigue, what the AI has learned about you.
 func new_game() -> void:
+	clear_floor_balls()   # a fresh match, a swept floor
 	# whatever was being reviewed belongs to the old match
 	var_call = {}
 	pending_var = {}
@@ -81,7 +82,14 @@ func start_game() -> void:
 	start_point()
 
 
+## The last ball, if it ended up on the floor, stays there.
+func leave_lost_ball() -> void:
+	if last_hitter != 0 and bp.y < Sim.TABLE_Y * 0.5:
+		drop_floor_ball(bp)
+
+
 func start_point() -> void:
+	leave_lost_ball()
 	decoy = {}
 	trick = {}
 	if skill_on() and drill.is_empty():

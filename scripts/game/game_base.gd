@@ -422,6 +422,11 @@ var hexes := {"spoon": {PLAYER: 0, AI: 0}, "narrow": {PLAYER: 0, AI: 0}, "giant"
 		"gravity": {PLAYER: 0, AI: 0}, "view": {PLAYER: 0, AI: 0}}
 var view_cam := 0                  # 视角转移 on you: the view you're stuck with meanwhile
 var serve_hints := 3               # serves left that still show which keys serve what
+const FLOOR_BALLS_MAX := 60        # balls left lying on the floor before the oldest is picked up
+const FLOOR_BALLS_START := 10      # lying about already when a match starts
+var floor_balls: MultiMeshInstance3D
+var floor_shadows: MultiMeshInstance3D
+var floor_ball_pos: Array = []     # where this match's lost balls came to rest
 var narrow_strips := {}            # side -> [left, right, left edge line, right edge line]
 var narrow_w := {PLAYER: 0.0, AI: 0.0}   # drawn width of the red strips, easing to the target
 var cam_shake := 0.0

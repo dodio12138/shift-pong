@@ -95,6 +95,7 @@ func _tutorial_banner() -> void:
 ## faster every five balls; target practice feeds mixed spin to the middle;
 ## receive practice is a real serve with its spin shown beforehand.
 func drill_feed() -> void:
+	leave_lost_ball()   # multi-ball: the floor fills up as the drill goes on
 	var kind: String = drill.kind
 	drill.n += 1
 	drill.resolved = false

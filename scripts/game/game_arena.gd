@@ -163,15 +163,11 @@ func build_world() -> void:
 		var s := rng.randf_range(0.02, 0.05)
 		add_static_box(Vector3(s, 0.002, s), p, C_FLOOR_SHADOW if rng.randf() < 0.7 else C_FLOOR_LIGHT)
 
-	# spare balls lying around and two ball baskets
-	for i in 14:
-		var p := Vector3(rng.randf_range(-3.5, 3.5), 0.02, rng.randf_range(-3.0, 3.0))
-		if absf(p.x) < 1.1:
-			p.x = signf(p.x + 0.001) * rng.randf_range(1.2, 3.5)
-		add_static(_disc_mesh(0.03), p + Vector3(0.012, -0.018, 0.012), C_FLOOR_SHADOW)
-		add_static(_sphere_mesh(0.022), p, C_YELLOW if rng.randf() < 0.6 else C_ORANGE)
+	# two ball baskets; the balls on the floor are the match's own (drop_floor_ball)
 	for spot in [Vector3(-1.6, 0.0, -0.4), Vector3(1.7, 0.0, 0.5)]:
 		make_basket(spot)
+	floor_balls = _floor_layer(_sphere_mesh(0.034), C_WHITE)
+	floor_shadows = _floor_layer(_disc_mesh(0.03), C_FLOOR_SHADOW)
 
 	# table: drop shadow, dark body, light top, white lines
 	var ty := Sim.TABLE_Y
@@ -1722,6 +1718,56 @@ func fx_burst(at: Vector3, col: Color, amount: int, speed: float) -> void:
 	world.add_child(p)
 	p.emitting = true
 	get_tree().create_timer(1.2).timeout.connect(p.queue_free)
+
+
+## The balls lost this match lie on the floor where they stopped (with a few
+## already there when it starts): one
+## MultiMesh for the balls and one for their shadows (two draw calls however
+## many there are), the oldest picked up once there are FLOOR_BALLS_MAX.
+func _floor_layer(mesh: Mesh, color: Color) -> MultiMeshInstance3D:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = mesh
+	mm.instance_count = FLOOR_BALLS_MAX
+	mm.visible_instance_count = 0
+	var mi := MultiMeshInstance3D.new()
+	mi.multimesh = mm
+	mi.material_override = make_mat(color)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	world.add_child(mi)
+	return mi
+
+
+## A ball that went out of play: left lying where it came to rest (kept on
+## the court, inside the barriers).
+func drop_floor_ball(at: Vector3) -> void:
+	var p := Vector3(clampf(at.x, -COURT.x + 0.15, COURT.x - 0.15), 0.034, clampf(at.z, -COURT.y + 0.15, COURT.y - 0.15))
+	floor_ball_pos.append(p)
+	if floor_ball_pos.size() > FLOOR_BALLS_MAX:
+		floor_ball_pos.pop_front()
+	_show_floor_balls()
+
+
+## A fresh floor for a new match: a handful of balls already lying about
+## (well away from the table), then the match adds its own.
+func clear_floor_balls() -> void:
+	floor_ball_pos.clear()
+	for i in FLOOR_BALLS_START:
+		var p := Vector3(randf_range(-COURT.x + 0.4, COURT.x - 0.4), 0.034, randf_range(-COURT.y + 0.4, COURT.y - 0.4))
+		if absf(p.x) < 1.3 and absf(p.z) < 2.2:   # not round the table
+			p.x = signf(p.x + 0.001) * randf_range(1.3, COURT.x - 0.4)
+		floor_ball_pos.append(p)
+	_show_floor_balls()
+
+
+func _show_floor_balls() -> void:
+	var n := floor_ball_pos.size()
+	for i in n:
+		var p: Vector3 = floor_ball_pos[i]
+		floor_balls.multimesh.set_instance_transform(i, Transform3D(Basis(), p))
+		floor_shadows.multimesh.set_instance_transform(i, Transform3D(Basis(), Vector3(p.x + 0.012, 0.003, p.z + 0.012)))
+	floor_balls.multimesh.visible_instance_count = n
+	floor_shadows.multimesh.visible_instance_count = n
 
 
 ## WebGL compiles a material's shader the first time something with it is
