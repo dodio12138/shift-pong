@@ -11,6 +11,8 @@ legendary bosses. English, 简体中文 and 日本語.
 
 像素风 3D 乒乓球（Godot 4.7，GDScript），GitHub Game Off 2026 参赛作品。
 
+**Play it on itch.io:** https://dodio12138.itch.io/shift-pong (browser, or Windows / macOS / Linux downloads)
+
 Needs a keyboard and mouse (it doesn't work on phones).
 
 ![A rule shift mid-match](promo/screenshots/1_rule_shift.png)
