@@ -1,14 +1,10 @@
 extends Node
-## Sound: the ball and the feet. Ball sounds are real recordings sampled from one
-## live match (see sounds/CREDITS.md), cut into single impacts with a natural decay
-## and sorted in sounds/real: hard / normal racket hits and table bounces;
-## footsteps are studio recordings on a wooden floor (Kenney, CC0) and shoe
-## squeals are cut whole from a sneaker foley recording (Pixabay). Each play
-## picks a random clip from its group with pitch / volume jitter so nothing
-## repeats exactly. Net and floor contacts reuse table bounces pitched down.
-## Positional sounds play in the 3D world so they pan and fade. No crowd or
-## voices: the match recording has commentary behind them. The music (a menu
-## and a match loop) and the skill sounds are little chiptunes made by
+## Sound: the ball and the feet, from the clips in sounds/real (hard / normal
+## racket hits, table bounces, footsteps, shoe squeaks; sources in
+## sounds/CREDITS.md). Each play picks a random clip from its group with pitch /
+## volume jitter so nothing repeats exactly. Net and floor contacts reuse table
+## bounces pitched down. Positional sounds play in the 3D world so they pan and
+## fade. The music (a menu and a match loop) and the skill sounds are made by
 ## tools/make_audio.py.
 
 const POOL := 14

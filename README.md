@@ -30,7 +30,7 @@ Open this folder in Godot 4.7, or:
 godot --path .
 ```
 
-Debug flags (after `--`): `--autoplay`, `--level=0..4`, `--tie-auto`, `--boss-auto=ml|xx|zjk|fzd`,
+Debug flags (after `--`): `--autoplay`, `--level=0..4`, `--tie-auto`, `--boss-auto=hexa|cloud|twist|cannon`,
 `--drill-auto=multi|target|receive`, `--skill`, `--loadout=a,b,c,d`, `--run-auto`, `--lang=en|zh|ja`, `--nosave` (writes no settings).
 
 ## Audio
