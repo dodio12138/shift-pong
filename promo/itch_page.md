@@ -12,6 +12,8 @@
 
 Real table tennis — topspin, backspin, sidespin, strokes you time and power yourself — and then the rules start shifting.
 
+> **Play it in the browser right here, or download it for Windows, macOS or Linux (below) for a smoother frame rate and the full effects.** On macOS, the first time: right-click the app → Open.
+
 **Hold SHIFT** to open the skill wheel and bend a rally your way:
 
 - **Lane Shift** — past the net, the ball blinks onto another line.
