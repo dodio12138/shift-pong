@@ -34,9 +34,11 @@ Take **four** into each match. Every fourth point, the **rules shift** for both 
 | Mouse | move |
 | Q W E / A S D | strokes: top row loops and smashes, bottom row pushes; left / right column for sidespin; hold longer for more power |
 | Space | serve (hold to pick the spin, release in the bright zone) |
-| **Shift** | skill wheel (release to cast) · 1–4 cast directly |
+| **Shift** | skill wheel (release to cast) · 1–4 or the middle mouse button work too |
 | T | focus: slow time |
 | C | camera · B replay · V challenge a call · Y timeout |
+
+On Windows, tapping Shift five times in a row opens the Sticky Keys prompt: hold Shift for the wheel, or use 1–4.
 
 English · 简体中文 · 日本語 (Settings).
 

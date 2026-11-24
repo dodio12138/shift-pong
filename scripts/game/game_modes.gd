@@ -252,12 +252,24 @@ func finish_drill() -> void:
 	drill = {}
 	drill_mark.visible = false
 	if drill_auto != "":
-		get_tree().quit()
+		quit_game()
 		return
 	open_menu("drill_done")
 
 
 # ---------------------------------------------------------------- settings
+
+## Quits. On macOS the engine's own shutdown crashes after everything has
+## been saved (inside the system's app-terminate path, whatever the graphics
+## driver), which pops up a crash report; there the process just ends once the
+## settings are written.
+func quit_game() -> void:
+	if OS.get_name() == "macOS":
+		save_settings()
+		OS.kill(OS.get_process_id())
+		return
+	get_tree().quit()
+
 
 func load_settings() -> void:
 	var cf := ConfigFile.new()
@@ -459,7 +471,7 @@ func finish_tie_match() -> void:
 				shift_run.log[-1].score, shift_run.hearts, shift_run.loadout, shift_run.offer])
 		if run_auto:
 			if shift_run.is_over() or shift_run.log.size() >= 3:
-				get_tree().quit()
+				quit_game()
 				return
 			if not shift_run.offer.is_empty():
 				shift_run.take(shift_run.offer[0], 0)
@@ -481,7 +493,7 @@ func finish_tie_match() -> void:
 			settings.beaten.append(boss_id)   # the legends you have beaten stay beaten
 			save_settings()
 		if boss_auto != "":
-			get_tree().quit()
+			quit_game()
 			return
 		club_ui.boss_result = {"id": boss_id, "won": winner == PLAYER, "games": [games[PLAYER], games[AI]], "scores": game_scores.duplicate()}
 		club_ui.show_report(match_report("BOSS 战", winner), "boss")
@@ -493,7 +505,7 @@ func finish_tie_match() -> void:
 			tie.wins[1], tie.wins[-1]])
 	if tie_auto:
 		if tie.is_over():
-			get_tree().quit()
+			quit_game()
 		else:
 			play_tie_match(false)
 		return

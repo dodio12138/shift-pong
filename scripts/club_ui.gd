@@ -321,7 +321,7 @@ func back() -> void:
 	match page:
 		"title":
 			if not OS.has_feature("web"):
-				get_tree().quit()
+				main.quit_game()
 		"cups", "practice":
 			show_page("title")
 		"solo_setup", "team_setup", "cup":
@@ -560,7 +560,7 @@ func _page_title() -> void:
 		show_page("settings")
 	_button("设置", sets, row)
 	if not OS.has_feature("web"):   # a web page can't be quit, only closed
-		_button("退出", func(): get_tree().quit(), row)
+		_button("退出", func(): main.quit_game(), row)
 
 
 ## Shows `text` in `label` while the mouse or the keyboard focus is on `b`.

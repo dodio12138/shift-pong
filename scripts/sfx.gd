@@ -108,8 +108,14 @@ func tick(at: Vector3) -> void:
 	_play("table", at, -22.0, 1.8)
 
 
-## Focus card: everything muffled and slowed until it ends.
+## Focus card: everything muffled and slowed until it ends. The web build
+## plays sounds as samples, where bus effects and the speed scale do nothing:
+## there the sounds and the music duck instead, the music further.
 func focus(on: bool) -> void:
+	if OS.has_feature("web"):
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index("SFX"), -6.0 if on else 0.0)
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Music"), -14.0 if on else 0.0)
+		return
 	var master := AudioServer.get_bus_index("Master")
 	AudioServer.set_bus_effect_enabled(master, 0, on)
 	AudioServer.playback_speed_scale = 0.75 if on else 1.0

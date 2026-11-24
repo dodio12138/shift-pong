@@ -72,6 +72,7 @@ func _ready() -> void:
 			boss_auto = a.trim_prefix("--boss-auto=")
 	if OS.has_feature("web") and str(JavaScriptBridge.eval("location.search")).contains("perf"):
 		perf_log = true
+	get_tree().set_auto_accept_quit(false)   # the close button goes through quit_game
 	randomize()
 	build_viewport()
 	build_world()
@@ -126,6 +127,11 @@ func _ready() -> void:
 		open_menu(ui_page if ui_page != "" else "title")
 	else:
 		new_game()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		quit_game()
 
 
 func _physics_process(delta: float) -> void:
@@ -468,4 +474,4 @@ func _process(delta: float) -> void:
 		get_viewport().get_texture().get_image().save_png(screenshot_path)
 		print("[screenshot] ", screenshot_path)
 		screenshot_path = ""
-		get_tree().quit()
+		quit_game()
