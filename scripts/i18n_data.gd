@@ -672,6 +672,7 @@ const EN := {
 	"比赛中按 Tab 切换": "Tab switches it in a match",
 	"界面信息：%s": "HUD: %s",
 	"详细信息": "More info",
+	"压长": "Deep",
 }
 
 const JA := {
@@ -1344,4 +1345,5 @@ const JA := {
 	"比赛中按 Tab 切换": "試合中は Tab で切り替え",
 	"界面信息：%s": "HUD 表示：%s",
 	"详细信息": "詳細表示",
+	"压长": "深く",
 }

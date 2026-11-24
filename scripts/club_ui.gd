@@ -320,7 +320,8 @@ func show_report(r: Dictionary, next: String) -> void:
 func back() -> void:
 	match page:
 		"title":
-			get_tree().quit()
+			if not OS.has_feature("web"):
+				get_tree().quit()
 		"cups", "practice":
 			show_page("title")
 		"solo_setup", "team_setup", "cup":
@@ -558,7 +559,8 @@ func _page_title() -> void:
 		settings_back = "title"
 		show_page("settings")
 	_button("设置", sets, row)
-	_button("退出", func(): get_tree().quit(), row)
+	if not OS.has_feature("web"):   # a web page can't be quit, only closed
+		_button("退出", func(): get_tree().quit(), row)
 
 
 ## Shows `text` in `label` while the mouse or the keyboard focus is on `b`.

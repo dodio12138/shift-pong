@@ -8,6 +8,7 @@ config/name="SHIFT PONG"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="PingPong GameOff"
 run/main_scene="res://main.tscn"
+run/disable_stdout.web=true
 config/icon="res://icon.png"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
